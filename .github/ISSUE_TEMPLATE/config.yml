@@ -1,11 +1,11 @@
 blank_issues_enabled: true
 contact_links:
   - name: Question or Problem
-    url: SUPPORT.md
+    url: ../SUPPORT.md
     about: Check our support guidelines for help
   - name: Documentation
-    url: docs/
+    url: ../docs/
     about: Make sure you've read the documentation
   - name: Security Issue
-    url: SECURITY.md
+    url: ../SECURITY.md
     about: Read our security policy for reporting vulnerabilities
