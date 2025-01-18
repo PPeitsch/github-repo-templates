@@ -1,25 +1,46 @@
-# Support
+# 💬 Support
 
-## How to get help
+## How to Get Help
 
-We use GitHub for tracking bugs and feature requests. This isn't the right place to get support for using this project, but the following resources are available:
+Welcome to {{PROJECT_NAME}}! We use GitHub for tracking bugs and feature requests. Before seeking help, please check these resources:
 
-### Documentation
-- Check the [documentation](../docs/) directory
-- Read through our [Wiki](../../wiki) if available
-- Look for example code in the [examples](../examples/) directory if available
+### 📚 Official Documentation
+- [Main Documentation]({{DOCS_URL}})
+- [API Reference]({{DOCS_URL}}/api)
+- [FAQ]({{DOCS_URL}}/faq)
+- [Examples]({{DOCS_URL}}/examples)
 
-### Questions
-1. **Search existing issues and discussions** - someone might have asked the same question before.
-2. **Stack Overflow** - Ask questions using the appropriate tags.
-3. **Community Forums** - [IF APPLICABLE, ADD FORUM LINKS]
+### 🔍 Search Existing Resources
+1. [GitHub Issues]({{REPO_URL}}/issues) - search for existing issues
+2. [GitHub Discussions]({{REPO_URL}}/discussions) - check community discussions
+3. [Stack Overflow]({{STACK_OVERFLOW_URL}}) - search with tag `{{STACK_OVERFLOW_TAG}}`
 
-Please **do not** use the issue tracker for personal support requests or consulting questions.
+## 🤔 Asking Quality Questions
 
-## What we can't help with
-- Custom development work
-- Personal support requests
-- Customization questions
+To get helpful answers quickly:
 
-## Professional Support
-[IF APPLICABLE, ADD PROFESSIONAL SUPPORT OPTIONS]
+1. 📝 Be specific about what you're trying to do
+2. 🔍 Describe what you've tried
+3. 📋 Share relevant code snippets
+4. 💻 Include your environment details
+5. 🐛 Provide error messages if applicable
+
+## 🚫 What We Can't Help With
+
+- ❌ Custom development work
+- ❌ Project-specific implementations
+- ❌ Third-party integrations not officially supported
+
+## 📞 Contact Channels
+
+{{SUPPORT_CHANNELS}}
+
+## 💼 Professional Support
+
+For enterprise support options:
+- 📧 Contact: [{{SUPPORT_EMAIL}}](mailto:{{SUPPORT_EMAIL}})
+- 🔗 Enterprise info: [{{ENTERPRISE_SUPPORT_URL}}]({{ENTERPRISE_SUPPORT_URL}})
+
+## 🌟 Community Resources
+
+{{COMMUNITY_RESOURCES}}
