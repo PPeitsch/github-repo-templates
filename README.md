@@ -123,9 +123,17 @@ The `setup-templates.sh` script:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our:
-- [Contributing Guidelines](.github/CONTRIBUTING.md)
-- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
+Contributions are welcome! Before contributing to this template repository, please note:
+
+- We follow standard GitHub Flow for contributions
+- Open issues for any bugs or improvements
+- Submit PRs with clear descriptions
+- Keep templates generic and widely applicable
+- Test template changes with the setup script
+
+For guidance on using these templates in your own projects, see the template versions of:
+- [Contributing Guidelines Template](.github/CONTRIBUTING.md)
+- [Code of Conduct Template](.github/CODE_OF_CONDUCT.md)
 
 ## 📜 License
 
