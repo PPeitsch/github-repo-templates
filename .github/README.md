@@ -1,29 +1,38 @@
-# Project Name
+# {{PROJECT_NAME}}
 
-Short project description.
+[![License: {{LICENSE_TYPE}}](https://img.shields.io/badge/License-{{LICENSE_TYPE}}-yellow.svg)]({{LICENSE_URL}})
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)]({{COC_PATH}})
+
+{{PROJECT_DESCRIPTION}}
 
 ## Features
 
-- Feature 1
-- Feature 2
-- Feature 3
+[Your project features here]
 
 ## Installation
 
-Installation instructions...
+[Installation instructions]
 
 ## Usage
 
-Usage instructions...
+[Usage instructions and examples]
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
+Please read our [Contributing Guidelines]({{CONTRIBUTING_PATH}}) for details on our code of conduct and the process for submitting pull requests.
+
+## Documentation
+
+Complete documentation is available at [{{DOCS_URL}}]({{DOCS_URL}}).
 
 ## Security
 
-If you discover a security vulnerability, please read our [Security Policy](SECURITY.md).
+For vulnerability reports, please review our [Security Policy]({{SECURITY_PATH}}).
+
+## Support
+
+Need help? Check out our [Support Guide]({{SUPPORT_PATH}}).
 
 ## License
 
-This project is licensed under the [LICENSE NAME] - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the {{LICENSE_TYPE}} License - see the [LICENSE]({{LICENSE_PATH}}) file for details.
