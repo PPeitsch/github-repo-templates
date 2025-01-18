@@ -3,79 +3,130 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](.github/CODE_OF_CONDUCT.md)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/PPeitsch/github-repository-templates/graphs/commit-activity)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](/.github/CONTRIBUTING.md)
 
-A comprehensive collection of standardized GitHub repository templates and community health files. Ready-to-use templates for documentation, issues, pull requests, and project maintenance.
+A comprehensive collection of standardized GitHub repository templates and community health files. Features a powerful variable system for easy customization.
 
-## 🚀 Features
+## 🌟 Features
 
-- **Complete Template Set**: Full suite of GitHub community health files
-- **Customizable**: Easy variable replacement for project-specific content
-- **Best Practices**: Following GitHub's recommended standards
-- **Well Documented**: Clear instructions and examples for all templates
+- 📋 Complete set of GitHub community health files
+- 🔄 Variable system for easy customization
+- 🚀 Automated setup script
+- 💅 Beautiful, emoji-rich templates
+- 📊 Comprehensive documentation templates
 
-## 📋 Included Templates
+## 📁 Directory Structure
 
-- `.github/`
-  - `ISSUE_TEMPLATE/`
-    - `bug.yml` - Bug report template
-    - `config.yml` - Issue template configuration
-    - `feature.yml` - Feature request template
-  - `CODE_OF_CONDUCT.md` - Community behavior guidelines
-  - `CONTRIBUTING.md` - Contribution guidelines
-  - `PULL_REQUEST_TEMPLATE.md` - PR template
-  - `SECURITY.md` - Security policy
-  - `SUPPORT.md` - Support guidelines
-- `README.md` - Project README template
-- `CHANGELOG.md` - Change tracking template
+```
+.
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug.yml
+│   │   ├── config.yml
+│   │   └── feature.yml
+│   ├── CODE_OF_CONDUCT.md
+│   ├── CONTRIBUTING.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── SECURITY.md
+│   └── SUPPORT.md
+├── template-config.yml
+├── setup-templates.sh
+└── README-template.md
+```
 
-## 🛠️ Usage
+## 🚀 Quick Start
 
 1. Clone this repository:
 ```bash
 git clone https://github.com/PPeitsch/github-repository-templates.git
 ```
 
-2. Copy the templates to your project:
+2. Copy the template files to your project:
 ```bash
 cp -r github-repository-templates/.github/ your-project/
+cp github-repository-templates/README-template.md your-project/README.md
 ```
 
-3. Configure the variables file (see [Configuration](#-configuration))
+3. Create and customize your `template-config.yml`:
+```bash
+cp template-config.yml your-project/template-config.yml
+```
 
-4. Use the provided script to replace variables:
+4. Configure your variables in `template-config.yml`
+
+5. Run the setup script:
 ```bash
 ./setup-templates.sh your-project/
 ```
 
-## ⚙️ Configuration
+## ⚙️ Configuration System
 
-Create a `template-config.yml` file with your project-specific variables:
+### Variable Structure
+
+The `template-config.yml` file organizes variables in logical sections:
 
 ```yaml
 project:
-  name: "Your Project Name"
-  description: "Project description"
-  owner: "Your Name"
-  email: "your.email@example.com"
+  name: "Your Project"
+  version: "1.0.0"
+  # ... more project info
+
+contact:
+  email: "contact@example.com"
   security_email: "security@example.com"
-  repo_url: "https://github.com/username/repository"
-  documentation_url: "https://docs.example.com"
-  license: "MIT"
+  # ... more contact info
+
+urls:
+  repo: "https://github.com/username/repo"
+  docs: "https://docs.example.com"
+  # ... more URLs
 ```
+
+### Variable Usage
+
+Variables in templates use the `{{VARIABLE_NAME}}` syntax:
+
+```markdown
+# {{PROJECT_NAME}}
+
+Welcome to {{PROJECT_NAME}} version {{PROJECT_VERSION}}
+```
+
+## 🛠️ Setup Script
+
+The `setup-templates.sh` script:
+1. Reads your `template-config.yml`
+2. Processes all template files recursively
+3. Replaces all variables with their configured values
+4. Maintains file permissions and structure
+
+### Usage
+```bash
+./setup-templates.sh <project-directory>
+```
+
+### Features
+- ✅ Handles nested YAML structures
+- ✅ Preserves file formatting
+- ✅ Processes all template files
+- ✅ Provides detailed error messages
+- ✅ Creates backups during processing
+
+## 📋 Available Templates
+
+- 📝 README.md - Project documentation
+- 👥 CODE_OF_CONDUCT.md - Community guidelines
+- 🤝 CONTRIBUTING.md - Contribution guidelines
+- 🔒 SECURITY.md - Security policy
+- 💬 SUPPORT.md - Support information
+- 🎫 Issue templates
+- 🔄 Pull request templates
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](.github/CONTRIBUTING.md).
+Contributions are welcome! Please read our:
+- [Contributing Guidelines](.github/CONTRIBUTING.md)
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
 
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 💡 Support
-
-Need help? Check out our [Support Guide](.github/SUPPORT.md).
-
-## 🔒 Security
-
-Found a security issue? Please check our [Security Policy](.github/SECURITY.md).

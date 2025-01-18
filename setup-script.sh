@@ -21,54 +21,60 @@ if [ ! -d "$PROJECT_DIR" ]; then
     exit 1
 fi
 
-# Function to read value from yaml file
-parse_yaml() {
+# Function to read nested yaml values
+get_yaml_values() {
     local prefix=$2
-    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
-    sed -ne "s|^\($s\):|\1|" \
-         -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
-         -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+    local yaml_file=$1
+    local s='[[:space:]]*'
+    local w='[a-zA-Z0-9_]*'
+    local fs=$(echo @|tr @ '\034')
+
+    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\'\(.*\)\'$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yaml_file" |
     awk -F$fs '{
         indent = length($1)/2;
         vname[indent] = $2;
         for (i in vname) {if (i > indent) {delete vname[i]}}
         if (length($3) > 0) {
             vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-            printf("%s%s=\"%s\"\n", "'$prefix'",vn$2,$3);
+            printf("%s%s%s=\"%s\"\n", "'$prefix'", vn, $2, $3);
         }
     }'
 }
 
-# Read config values
-eval $(parse_yaml $CONFIG_FILE)
+# Create temporary file for variable mappings
+TEMP_VARS=$(mktemp)
 
-# Find and replace variables in all template files
-echo "Replacing variables in template files..."
+# Get all variables from config file with their full paths
+get_yaml_values "$CONFIG_FILE" "" > "$TEMP_VARS"
 
-find "$PROJECT_DIR/.github" -type f -name "*.md" -o -name "*.yml" | while read file; do
+echo "Processing template files..."
+
+# Find all template files
+find "$PROJECT_DIR/.github" -type f \( -name "*.md" -o -name "*.yml" \) | while read file; do
     echo "Processing $file..."
-    # Replace all variables from config
-    sed -i.bak \
-        -e "s|{{PROJECT_NAME}}|$project_name|g" \
-        -e "s|{{PROJECT_DESCRIPTION}}|$project_description|g" \
-        -e "s|{{OWNER_NAME}}|$project_owner|g" \
-        -e "s|{{CONTACT_EMAIL}}|$project_email|g" \
-        -e "s|{{SECURITY_EMAIL}}|$project_security_email|g" \
-        -e "s|{{SUPPORT_EMAIL}}|$project_support_email|g" \
-        -e "s|{{REPO_URL}}|$project_repo_url|g" \
-        -e "s|{{DOCS_URL}}|$project_documentation_url|g" \
-        -e "s|{{LICENSE_TYPE}}|$project_license|g" \
-        -e "s|{{LICENSE_URL}}|$project_license_url|g" \
-        -e "s|{{MAIN_BRANCH}}|$project_main_branch|g" \
-        -e "s|{{CURRENT_YEAR}}|$(date +%Y)|g" \
-        -e "s|{{CONTRIBUTING_PATH}}|$links_contributing|g" \
-        -e "s|{{COC_PATH}}|$links_code_of_conduct|g" \
-        -e "s|{{SECURITY_PATH}}|$links_security|g" \
-        -e "s|{{SUPPORT_PATH}}|$links_support|g" \
-        -e "s|{{CHANGELOG_PATH}}|$links_changelog|g" \
-        -e "s|{{LICENSE_PATH}}|$links_license|g" \
-        "$file"
-    rm "${file}.bak"
+
+    # Create a temporary file for the processed content
+    temp_file=$(mktemp)
+    cp "$file" "$temp_file"
+
+    # Read each variable mapping and perform substitution
+    while IFS='=' read -r var value; do
+        # Remove quotes from value
+        value=$(echo "$value" | sed 's/^"//;s/"$//')
+        # Create the template variable format {{VAR_NAME}}
+        template_var="{{${var}}}"
+        # Replace in the temporary file
+        sed -i.bak "s|${template_var}|${value}|g" "$temp_file"
+    done < "$TEMP_VARS"
+
+    # Move processed file back to original location
+    mv "$temp_file" "$file"
 done
+
+# Cleanup
+rm "$TEMP_VARS"
+rm -f "$PROJECT_DIR/.github"/*.bak
 
 echo "Template setup completed successfully!"
