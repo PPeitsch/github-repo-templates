@@ -52,7 +52,7 @@ get_yaml_values "$CONFIG_FILE" "" > "$TEMP_VARS"
 echo "Processing template files..."
 
 # Find all template files
-find "$PROJECT_DIR/.github" -type f \( -name "*.md" -o -name "*.yml" \) | while read file; do
+find "$PROJECT_DIR.github" -type f \( -name "*.md" -o -name "*.yml" \) | while read file; do
     echo "Processing $file..."
 
     # Create a temporary file for the processed content
