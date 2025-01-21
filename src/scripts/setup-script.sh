@@ -6,8 +6,8 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-PROJECT_DIR="$1"
-CONFIG_FILE="template-config.yml"
+PROJECT_DIR="${1%/}"  # Remove trailing slash if present
+CONFIG_FILE="$PROJECT_DIR/template-config.yml"
 
 # Check if config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
@@ -15,66 +15,58 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# Check if project directory exists
-if [ ! -d "$PROJECT_DIR" ]; then
-    echo "Error: Project directory $PROJECT_DIR not found"
-    exit 1
-fi
-
-# Function to read nested yaml values
-get_yaml_values() {
-    local prefix=$2
+# Function to parse yaml and create variable replacements
+parse_yaml() {
     local yaml_file=$1
+    local prefix=$2
     local s='[[:space:]]*'
     local w='[a-zA-Z0-9_]*'
     local fs=$(echo @|tr @ '\034')
 
-    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+    sed -e '/^#/d' \
+        -e "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
         -e "s|^\($s\)\($w\)$s:$s\'\(.*\)\'$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yaml_file" |
-    awk -F$fs '{
-        indent = length($1)/2;
-        vname[indent] = $2;
-        for (i in vname) {if (i > indent) {delete vname[i]}}
-        if (length($3) > 0) {
-            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-            printf("%s%s%s=\"%s\"\n", "'$prefix'", vn, $2, $3);
-        }
-    }'
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" \
+        "$yaml_file" | awk -F$fs '{
+            indent = length($1)/2;
+            vname[indent] = $2;
+            for (i in vname) {if (i > indent) {delete vname[i]}}
+            if (length($3) > 0) {
+                vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+                if(vn==""){ printf("%s=%s\n", toupper($2), $3)}
+                else { printf("%s_%s=%s\n", toupper(vn), toupper($2), $3)}
+            }
+        }'
 }
 
-# Create temporary file for variable mappings
-TEMP_VARS=$(mktemp)
+# Create temporary file for processed variables
+TEMP_VARS=$(mktemp 2>/dev/null || mktemp -t tmp.XXXXXX)
 
-# Get all variables from config file with their full paths
-get_yaml_values "$CONFIG_FILE" "" > "$TEMP_VARS"
+# Parse YAML and store variables
+parse_yaml "$CONFIG_FILE" > "$TEMP_VARS"
 
 echo "Processing template files..."
 
-# Find all template files
-find "$PROJECT_DIR.github" -type f \( -name "*.md" -o -name "*.yml" \) | while read file; do
+# Process all markdown and yml files in the project directory
+find "$PROJECT_DIR" -type f \( -name "*.md" -o -name "*.yml" \) | while read -r file; do
     echo "Processing $file..."
 
-    # Create a temporary file for the processed content
-    temp_file=$(mktemp)
-    cp "$file" "$temp_file"
+    # Create temporary file for processing
+    TEMP_FILE=$(mktemp 2>/dev/null || mktemp -t tmp.XXXXXX)
+    cp "$file" "$TEMP_FILE"
 
-    # Read each variable mapping and perform substitution
+    # Read and apply each variable replacement
     while IFS='=' read -r var value; do
-        # Remove quotes from value
-        value=$(echo "$value" | sed 's/^"//;s/"$//')
-        # Create the template variable format {{VAR_NAME}}
-        template_var="{{${var}}}"
-        # Replace in the temporary file
-        sed -i.bak "s|${template_var}|${value}|g" "$temp_file"
+        value=$(echo "$value" | sed 's/^[[:space:]]*"//;s/"[[:space:]]*$//;s/^[[:space:]]*//;s/[[:space:]]*$//')
+        value=$(echo "$value" | sed 's/[\/&]/\\&/g')
+        template_var="{{$var}}"
+        perl -i -pe "s/\Q$template_var\E/$value/g" "$TEMP_FILE"
     done < "$TEMP_VARS"
 
-    # Move processed file back to original location
-    mv "$temp_file" "$file"
+    mv "$TEMP_FILE" "$file"
 done
 
 # Cleanup
-rm "$TEMP_VARS"
-rm -f "$PROJECT_DIR/.github"/*.bak
+rm -f "$TEMP_VARS"
 
 echo "Template setup completed successfully!"
