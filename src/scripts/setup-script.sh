@@ -27,24 +27,49 @@ fi
 # Function to parse yaml and create variable replacements
 parse_yaml() {
     local yaml_file=$1
-    local s='[[:space:]]*'
-    local w='[a-zA-Z0-9_]*'
-    local fs=$(echo @|tr @ '\034')
+    local content=""
+    local var=""
+    local in_multiline=0
+    local multiline_content=""
 
-    sed -ne 's/^#.*//;/^[[:space:]]*$/d' \
-        -e "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s'\(.*\)'$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yaml_file" | \
-    awk -F$fs '{
-        indent = length($1)/2;
-        vname[indent] = $2;
-        for (i in vname) {if (i > indent) {delete vname[i]}}
-        if (length($3) > 0) {
-            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-            if(vn==""){ printf("%s=%s\n", toupper($2), $3)}
-            else { printf("%s_%s=%s\n", toupper(vn), toupper($2), $3)}
-        }
-    }'
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Skip comments and empty lines
+        [[ $line =~ ^[[:space:]]*# ]] && continue
+        [[ $line =~ ^[[:space:]]*$ ]] && continue
+
+        # Check if this is a new variable definition
+        if [[ $line =~ ^[[:space:]]*([A-Za-z0-9_]+):[[:space:]]*(.*) ]]; then
+            # If we were processing a multiline value, save it
+            if [ $in_multiline -eq 1 ]; then
+                echo "${var}=${multiline_content}"
+                in_multiline=0
+                multiline_content=""
+            fi
+
+            var="${BASH_REMATCH[1]}"
+            content="${BASH_REMATCH[2]}"
+
+            # Check if this is the start of a multiline value
+            if [[ $content =~ ^[[:space:]]*\|(.*) ]]; then
+                in_multiline=1
+                multiline_content=""
+            else
+                # Single line value
+                echo "$var=$content"
+            fi
+        elif [ $in_multiline -eq 1 ]; then
+            # Append to multiline content, preserving indentation
+            if [ -n "$multiline_content" ]; then
+                multiline_content+=$'\n'
+            fi
+            multiline_content+="$line"
+        fi
+    done < "$yaml_file"
+
+    # Handle last multiline value if exists
+    if [ $in_multiline -eq 1 ]; then
+        echo "${var}=${multiline_content}"
+    fi
 }
 
 # Create temporary file for processed variables
