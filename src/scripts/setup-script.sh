@@ -27,8 +27,7 @@ fi
 # Function to parse yaml and create variable replacements
 parse_yaml() {
     local yaml_file=$1
-    local content=""
-    local var=""
+    local current_var=""
     local in_multiline=0
     local multiline_content=""
 
@@ -39,36 +38,40 @@ parse_yaml() {
 
         # Check if this is a new variable definition
         if [[ $line =~ ^[[:space:]]*([A-Za-z0-9_]+):[[:space:]]*(.*) ]]; then
-            # If we were processing a multiline value, save it
+            # If we were processing a multiline value, output it
             if [ $in_multiline -eq 1 ]; then
-                echo "${var}=${multiline_content}"
+                echo "${current_var}=${multiline_content}"
                 in_multiline=0
                 multiline_content=""
             fi
 
-            var="${BASH_REMATCH[1]}"
+            current_var="${BASH_REMATCH[1]}"
             content="${BASH_REMATCH[2]}"
 
+            # Remove quotes and leading/trailing spaces
+            content=$(echo "$content" | sed -E 's/^[[:space:]]*"?([^"]*)"?[[:space:]]*$/\1/')
+
             # Check if this is the start of a multiline value
-            if [[ $content =~ ^[[:space:]]*\|(.*) ]]; then
+            if [[ $content =~ ^\| ]]; then
                 in_multiline=1
                 multiline_content=""
             else
                 # Single line value
-                echo "$var=$content"
+                echo "$current_var=$content"
             fi
         elif [ $in_multiline -eq 1 ]; then
-            # Append to multiline content, preserving indentation
+            # Trim leading spaces but preserve relative indentation
+            local trimmed_line=$(echo "$line" | sed -E 's/^[[:space:]]{2}//')
             if [ -n "$multiline_content" ]; then
                 multiline_content+=$'\n'
             fi
-            multiline_content+="$line"
+            multiline_content+="$trimmed_line"
         fi
     done < "$yaml_file"
 
     # Handle last multiline value if exists
     if [ $in_multiline -eq 1 ]; then
-        echo "${var}=${multiline_content}"
+        echo "${current_var}=${multiline_content}"
     fi
 }
 
