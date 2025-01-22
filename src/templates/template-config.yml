@@ -1,0 +1,67 @@
+# Template Configuration
+
+# Security Variables
+SECURITY_EMAIL: "security@example.com"
+VERSION_SUPPORT_TABLE: |
+  | 2.0.x | :white_check_mark: |
+  | 1.9.x | :white_check_mark: |
+  | 1.8.x | :x: |
+  | < 1.8 | :x: |
+SECURITY_ANNOUNCEMENT_CHANNEL: "GitHub Security Advisories"
+SECURITY_UPDATE_CHANNEL: "Security Alerts Dashboard"
+SECURITY_BEST_PRACTICES: |
+  - Use strong, unique passwords
+  - Enable 2FA for all accounts
+  - Keep dependencies updated
+  - Regular security audits
+  - Follow secure coding practices
+
+# Project Information
+PROJECT_NAME: "Your Project Name"
+PROJECT_DESCRIPTION: "Your project description"
+PROJECT_VERSION: "1.0.0"
+OWNER_NAME: "Project Owner"
+
+# URLs
+REPO_URL: "https://github.com/username/repo"
+DOCS_URL: "https://docs.example.com"
+STACK_OVERFLOW_URL: "https://stackoverflow.com/questions/tagged/project"
+STACK_OVERFLOW_TAG: "project-name"
+ENTERPRISE_SUPPORT_URL: "https://support.enterprise.com"
+
+# Contact Information
+SUPPORT_EMAIL: "support@example.com"
+CONTACT_EMAIL: "contact@example.com"
+
+# Development
+DEV_SETUP_COMMANDS: |
+  npm install
+  npm run build
+TEST_COMMANDS: |
+  npm run test
+  npm run lint
+CODING_STYLE_GUIDELINES: |
+  - Follow ESLint configuration
+  - Use Prettier for formatting
+  - Follow Git commit conventions
+
+# Paths
+CONTRIBUTING_PATH: ".github/CONTRIBUTING.md"
+COC_PATH: ".github/CODE_OF_CONDUCT.md"
+SECURITY_PATH: ".github/SECURITY.md"
+SUPPORT_PATH: ".github/SUPPORT.md"
+LICENSE_PATH: "LICENSE"
+LICENSE_TYPE: "MIT"
+LICENSE_URL: "https://opensource.org/licenses/MIT"
+
+# Support Channels
+SUPPORT_CHANNELS: |
+  - GitHub Discussions: https://github.com/org/repo/discussions
+  - Discord: https://discord.gg/project
+  - Stack Overflow: Use tag [project-name]
+
+# Community Resources
+COMMUNITY_RESOURCES: |
+  - Documentation: https://docs.example.com
+  - Forums: https://forums.example.com
+  - Blog: https://blog.example.com
