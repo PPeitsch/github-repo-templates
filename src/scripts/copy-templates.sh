@@ -25,6 +25,10 @@ mkdir -p "$TARGET_DIR"
 
 # Copy templates to target directory
 echo "Copying templates to $TARGET_DIR..."
-cp -r "$TEMPLATES_DIR/.github" "$TEMPLATES_DIR/README-template.md" "$TARGET_DIR"
+
+# Copy each component separately
+cp -r "$TEMPLATES_DIR/.github" "$TARGET_DIR/"
+cp "$TEMPLATES_DIR/README-template.md" "$TARGET_DIR/"
+cp "$TEMPLATES_DIR/template-config.yml" "$TARGET_DIR/"
 
 echo "Templates copied successfully to $TARGET_DIR"

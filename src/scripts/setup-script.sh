@@ -40,7 +40,9 @@ parse_yaml() {
         if [[ $line =~ ^[[:space:]]*([A-Za-z0-9_]+):[[:space:]]*(.*) ]]; then
             # If we were processing a multiline value, output it
             if [ $in_multiline -eq 1 ]; then
-                echo "${current_var}=${multiline_content}"
+                # Escape special characters in multiline content
+                escaped_content=$(printf '%s' "$multiline_content" | sed 's/[\&/]/\\&/g')
+                printf '%s=%s\n' "$current_var" "$escaped_content"
                 in_multiline=0
                 multiline_content=""
             fi
@@ -56,12 +58,13 @@ parse_yaml() {
                 in_multiline=1
                 multiline_content=""
             else
-                # Single line value
-                echo "$current_var=$content"
+                # Escape special characters in single line content
+                escaped_content=$(printf '%s' "$content" | sed 's/[\&/]/\\&/g')
+                printf '%s=%s\n' "$current_var" "$escaped_content"
             fi
         elif [ $in_multiline -eq 1 ]; then
-            # Trim leading spaces but preserve relative indentation
-            local trimmed_line=$(echo "$line" | sed -E 's/^[[:space:]]{2}//')
+            # Trim exactly two leading spaces from multiline content
+            local trimmed_line=$(echo "$line" | sed 's/^  //')
             if [ -n "$multiline_content" ]; then
                 multiline_content+=$'\n'
             fi
@@ -71,7 +74,8 @@ parse_yaml() {
 
     # Handle last multiline value if exists
     if [ $in_multiline -eq 1 ]; then
-        echo "${current_var}=${multiline_content}"
+        escaped_content=$(printf '%s' "$multiline_content" | sed 's/[\&/]/\\&/g')
+        printf '%s=%s\n' "$current_var" "$escaped_content"
     fi
 }
 
@@ -97,15 +101,13 @@ find "$PROJECT_DIR" -type f \( -name "*.md" -o -name "*.yml" \) | while read -r 
 
     # Read and apply each variable replacement
     while IFS='=' read -r var value; do
-        # Preserve newlines and special characters
-        value=$(echo "$value" | sed 's/[\/&]/\\&/g')
         template_var="{{$var}}"
 
         # Check if variable exists in file before replacing
-        if grep -q "$template_var" "$TEMP_FILE"; then
-            log_message "  Replacing $template_var with '$value'"
-            # Use perl for more reliable replacement
-            perl -i -pe "BEGIN{undef $/;} s/\Q$template_var\E/$value/gm" "$TEMP_FILE"
+        if grep -F -q "$template_var" "$TEMP_FILE"; then
+            log_message "  Replacing $template_var"
+            # Use sed with literal string search
+            sed -i "s/{{$var}}/$value/g" "$TEMP_FILE"
         fi
     done < "$TEMP_VARS"
 
