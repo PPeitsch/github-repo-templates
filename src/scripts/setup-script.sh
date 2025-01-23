@@ -40,9 +40,9 @@ parse_yaml() {
         if [[ $line =~ ^[[:space:]]*([A-Za-z0-9_]+):[[:space:]]*(.*) ]]; then
             # If we were processing a multiline value, output it
             if [ $in_multiline -eq 1 ]; then
-                # Escape special characters in multiline content
-                escaped_content=$(printf '%s' "$multiline_content" | sed 's/[\&/]/\\&/g')
-                printf '%s=%s\n' "$current_var" "$escaped_content"
+                # Eliminar espacios al final y asegurar que no haya "=" extras
+                multiline_content=$(echo "$multiline_content" | sed 's/[[:space:]]*$//')
+                printf '%s=%s\n' "$current_var" "$multiline_content"
                 in_multiline=0
                 multiline_content=""
             fi
@@ -58,13 +58,15 @@ parse_yaml() {
                 in_multiline=1
                 multiline_content=""
             else
-                # Escape special characters in single line content
-                escaped_content=$(printf '%s' "$content" | sed 's/[\&/]/\\&/g')
-                printf '%s=%s\n' "$current_var" "$escaped_content"
+                # Single line value - trim spaces
+                content=$(echo "$content" | sed 's/[[:space:]]*$//')
+                printf '%s=%s\n' "$current_var" "$content"
             fi
         elif [ $in_multiline -eq 1 ]; then
             # Trim exactly two leading spaces from multiline content
             local trimmed_line=$(echo "$line" | sed 's/^  //')
+            # Trim trailing spaces
+            trimmed_line=$(echo "$trimmed_line" | sed 's/[[:space:]]*$//')
             if [ -n "$multiline_content" ]; then
                 multiline_content+=$'\n'
             fi
@@ -74,8 +76,8 @@ parse_yaml() {
 
     # Handle last multiline value if exists
     if [ $in_multiline -eq 1 ]; then
-        escaped_content=$(printf '%s' "$multiline_content" | sed 's/[\&/]/\\&/g')
-        printf '%s=%s\n' "$current_var" "$escaped_content"
+        multiline_content=$(echo "$multiline_content" | sed 's/[[:space:]]*$//')
+        printf '%s=%s\n' "$current_var" "$multiline_content"
     fi
 }
 
@@ -105,8 +107,10 @@ find "$PROJECT_DIR" -type f \( -name "*.md" -o -name "*.yml" \) | while read -r 
 
         # Check if variable exists in file before replacing
         if grep -F -q "$template_var" "$TEMP_FILE"; then
-            log_message "  Replacing $template_var"
-            # Use sed with literal string search
+            # Restauramos el logging del valor de reemplazo
+            log_message "  Replacing $template_var with '$value'"
+            # Escape special characters properly for sed
+            value=$(printf '%s' "$value" | sed -e 's/[\&/=]/\\&/g')
             sed -i "s/{{$var}}/$value/g" "$TEMP_FILE"
         fi
     done < "$TEMP_VARS"
