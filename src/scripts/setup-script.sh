@@ -40,9 +40,7 @@ parse_yaml() {
         if [[ $line =~ ^[[:space:]]*([A-Za-z0-9_]+):[[:space:]]*(.*) ]]; then
             # If we were processing a multiline value, output it
             if [ $in_multiline -eq 1 ]; then
-                # Eliminar espacios al final y asegurar que no haya "=" extras
-                multiline_content=$(echo "$multiline_content" | sed 's/[[:space:]]*$//')
-                printf '%s=%s\n' "$current_var" "$multiline_content"
+                echo "$current_var=$multiline_content"
                 in_multiline=0
                 multiline_content=""
             fi
@@ -58,15 +56,11 @@ parse_yaml() {
                 in_multiline=1
                 multiline_content=""
             else
-                # Single line value - trim spaces
-                content=$(echo "$content" | sed 's/[[:space:]]*$//')
-                printf '%s=%s\n' "$current_var" "$content"
+                echo "$current_var=$content"
             fi
         elif [ $in_multiline -eq 1 ]; then
             # Trim exactly two leading spaces from multiline content
             local trimmed_line=$(echo "$line" | sed 's/^  //')
-            # Trim trailing spaces
-            trimmed_line=$(echo "$trimmed_line" | sed 's/[[:space:]]*$//')
             if [ -n "$multiline_content" ]; then
                 multiline_content+=$'\n'
             fi
@@ -76,8 +70,7 @@ parse_yaml() {
 
     # Handle last multiline value if exists
     if [ $in_multiline -eq 1 ]; then
-        multiline_content=$(echo "$multiline_content" | sed 's/[[:space:]]*$//')
-        printf '%s=%s\n' "$current_var" "$multiline_content"
+        echo "$current_var=$multiline_content"
     fi
 }
 
@@ -89,8 +82,8 @@ parse_yaml "$CONFIG_FILE" > "$TEMP_VARS"
 
 log_message "Processing template files..."
 log_message "Variables loaded from config:"
-while IFS='=' read -r var value; do
-    log_message "  $var = $value"
+while read -r line; do
+    log_message "  $line"
 done < "$TEMP_VARS"
 
 # Process all markdown and yml files in the project directory
@@ -102,16 +95,19 @@ find "$PROJECT_DIR" -type f \( -name "*.md" -o -name "*.yml" \) | while read -r 
     cp "$file" "$TEMP_FILE"
 
     # Read and apply each variable replacement
-    while IFS='=' read -r var value; do
-        template_var="{{$var}}"
+    while IFS= read -r line; do
+        if [[ $line =~ ^([^=]+)=(.*) ]]; then
+            var="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
+            template_var="{{$var}}"
 
-        # Check if variable exists in file before replacing
-        if grep -F -q "$template_var" "$TEMP_FILE"; then
-            # Restauramos el logging del valor de reemplazo
-            log_message "  Replacing $template_var with '$value'"
-            # Escape special characters properly for sed
-            value=$(printf '%s' "$value" | sed -e 's/[\&/=]/\\&/g')
-            sed -i "s/{{$var}}/$value/g" "$TEMP_FILE"
+            # Check if variable exists in file before replacing
+            if grep -F -q "$template_var" "$TEMP_FILE"; then
+                log_message "  Replacing $template_var with '$value'"
+                # Escape special characters properly for sed
+                value=$(printf '%s' "$value" | sed -e 's/[\/&]/\\&/g')
+                sed -i "s/{{$var}}/$value/g" "$TEMP_FILE"
+            fi
         fi
     done < "$TEMP_VARS"
 
